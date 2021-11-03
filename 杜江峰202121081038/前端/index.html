@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Virtual Drive</title>
+    <style type="text/css">
+        html {
+            -ms-text-size-adjust: 100%;
+            -webkit-text-size-adjust: 100%;
+        }
+         
+        body {
+            margin-left: 15%;
+            margin-top: 10%;
+        }
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+         
+        td,th {
+            padding: 0;
+        }
+         
+        .pure-table {
+            border-collapse: collapse;
+            border-spacing: 0;
+            empty-cells: show;
+            border: 1px solid #cbcbcb;
+        }
+         
+        .pure-table caption {
+            color: #000;
+            font: italic 85%/1 arial,sans-serif;
+            padding: 1em 0;
+            text-align: center;
+        }
+         
+        .pure-table td,.pure-table th {
+            border-left: 1px solid #cbcbcb;
+            border-width: 0 0 0 1px;
+            font-size: inherit;
+            margin: 0;
+            overflow: visible;
+            padding: .5em 1em;
+        }
+         
+        .pure-table thead {
+            background-color: #e0e0e0;
+            color: #000;
+            text-align: left;
+            vertical-align: bottom;
+        }
+         
+        .pure-table td {
+            background-color: transparent;
+        }
+         
+        .pure-table-odd td {
+            background-color: #f2f2f2;
+        }
+        
+        tbody:empty:before {
+            content: "No files found..."
+        }
+        body{
+            font-family: "Times New Roman";
+        }
+        button,input,thead{
+            font-family: "楷体";
+        }
+
+    </style>
+</head>
+<body background="234049-162022924962e4.jpg" style=" background-repeat:no-repeat ;background-size:100% 100%;background-attachment: fixed;">
+    <div class="conter">
+        <div>
+            <div id="test_table" class="upload">
+                <div class="file-box">
+                    <form class="submit" action="http://files-dujiangfeng.obs.cn-east-3.myhuaweicloud.com" method="post" enctype="multipart/form-data">
+                        <input id="key" type="hidden" name="key" value="a.txt" />
+                        <input id="x-obs-acl" type="hidden" name="x-obs-acl" value="public-read" />
+                        <input id="content-type" type="hidden" name="content-type" value="text/plain" />
+                        <input id="policy" type="hidden" name="policy" value="nul" />
+                        <input id="AccessKeyId" type="hidden" name="AccessKeyId" value="2IWTINKAIIRG91L9ILSV" />
+                        <input id="signature" type="hidden" name="signature" value="*** Provide your signature ***" />
+                        <input type="text" id="textfield" class="txt" style="width:40%;height: 10%"/>
+                        <input type="button" id="selectfile" class="btn" value="浏览文件" />
+                        <input id="file" type="file" name="file" class="file" id="fileField" style="display: none" onchange="document.getElementById('textfield').value=this.files[0].name" />
+                        <input type="submit" class="btn" value="上传" />
+                    </form>
+                </div>
+            </div>
+        </div>
+        <br>
+        <br>
+        <br>
+        <br>
+        <table id='t' class="pure-table" border="1" cellpadding="0" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>文件名</th>
+                    <th>文件大小</th>
+                    <th>上传日期</th>
+                    <th>预览</th>
+                    <th>下载</th>
+                </tr>
+
+            </thead>
+            <tbody class='tbody'>
+            </tbody>
+        </table>
+    </div>
+    </div>
+    </table>
+
+
+    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.js"></script>
+    <script type="text/javascript">
+        var data = {};
+
+        function autofresh() {
+            location.reload();
+        }
+        $.ajax({
+            type: 'post',
+            url: "https://c61b3f45dfaa4b85867338c5e64a99a3.apig.cn-east-3.huaweicloudapis.com/djf_list_files",
+            contentType: 'application/json',
+            dataType: "text",
+            data: {
+                "prefix":""
+            },
+            success: function(data) {
+                var arr = eval(data);
+                var html = '';
+                for (let item of arr) {
+                    html += '<tr id="t">' + '<td id="m1">' + item.key + '</td>' + '<td id="m2">' + item
+                        .size / 1024 + 'KB' + '</td>' + '<td>' + item.time + '</td>' +
+                        '<td><button type="button" id="button1" class="btn btn-primary">预览</button></td>' +
+                        '<td><button id="button2" type="button" class="btn btn-warning">下载</button></td>' +
+                        '</tr>';
+                }
+                $(".tbody").html(html);
+            },
+            error: function() {
+                console.log("........");
+            },
+            complete: function() {
+                $(".btn-primary").click(function(event) {
+                    var fileName = $(this).parents("tr").find("#m1").text();
+                    console.log(fileName)
+                    $.ajax({
+                        type: 'post',
+                        url: 'https://c61b3f45dfaa4b85867338c5e64a99a3.apig.cn-east-3.huaweicloudapis.com/djf_preview',
+                        dataType: "text",
+                        contentType: 'text/json',
+                        data: {fileName},
+                        success: function(data) {
+                            window.open(data);
+                        },
+                    });
+                });
+
+                $("#selectfile").click(function(event) {
+                    $("#file").click();
+                });
+                $("#file").change(function() {
+                    var uploadinput = document.getElementById("file");
+                    console.log(uploadinput)
+                    if (uploadinput.files[0]) {
+                        var str = uploadinput.files[0].name;
+                        console.log(str)
+                    }
+                    $("#key").attr("value", document.getElementById('file').files[0].name)
+                    $.ajax({
+                        type: 'post',
+                        url: 'https://c61b3f45dfaa4b85867338c5e64a99a3.apig.cn-east-3.huaweicloudapis.com/djf_upload_file',
+                        contentType: 'application/json',
+                        dataType: "text",
+                        data: "",
+                        success: function(data) {
+                            console.log(data)
+                            var info = eval('(' + data + ')');
+                            console.log(data);
+                            $("#policy").attr("value", info.policy);
+                            $("#AccessKeyId").attr("value", info.access_key_id);
+                            $("#signature").attr("value", info.signature);
+                        },
+                        error: function() {
+                            console.log("........");
+                        }
+                    });
+                });
+                $(".submit").submit(function() {
+                    console.log("上传！")
+                    if (confirm("确认上传？")) {
+                        window.setTimeout(autofresh, 10000);
+                    }
+                })
+                $(".btn-warning").click(function(event) {
+                    var fileName = $(this).parents("tr").find("#m1").text();
+                    console.log(fileName)
+                    if (confirm("确认下载？")) {
+                        $.ajax({
+                            type: 'post',
+                            url: 'https://c61b3f45dfaa4b85867338c5e64a99a3.apig.cn-east-3.huaweicloudapis.com/djf_preview',
+                            contentType: 'application/json',
+                            dataType: "text",
+                            data: {fileName},
+                            success: function(data) {
+                                console.log(data);
+                                var xhr = new XMLHttpRequest();
+                                xhr.open('GET', data,
+                                    true);
+                                xhr.responseType = 'blob';
+                                xhr.onload = () => {
+                                    if (xhr.status === 200) {
+                                        saveAs(xhr.response, fileName);
+                                    }
+                                };
+                                xhr.send();
+                            }
+                        });
+                    }
+                });
+
+                function saveAs(data, name) {
+                    var urlObject = window.URL || window.webkitURL || window;
+                    var export_blob = new Blob([data]);
+                    var save_link = document.createElementNS('http://www.w3.org/1999/xhtml', 'a');
+                    save_link.href = urlObject.createObjectURL(export_blob);
+                    save_link.download = name;
+                    save_link.click();
+                };
+            },
+        });
+    </script>
+</body>
+
+</html>
